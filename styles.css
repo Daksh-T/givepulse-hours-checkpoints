@@ -1,0 +1,560 @@
+:root {
+  --bg: #f5f1ea;
+  --panel: #ffffff;
+  --panel-soft: #f4f1eb;
+  --ink: #1f2a30;
+  --muted: #67757b;
+  --line: #ddd5c8;
+  --accent: #582c83;
+  --accent-soft: #f1e8fb;
+  --gold: #ffb81c;
+  --gold-soft: #fff1c9;
+  --shadow: 0 16px 34px rgba(31, 42, 48, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+.shell {
+  width: min(920px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 24px 0 40px;
+}
+
+.header {
+  margin-bottom: 18px;
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(1.9rem, 3vw, 2.4rem);
+  line-height: 1.05;
+}
+
+h2 {
+  font-size: clamp(1.35rem, 2.5vw, 1.9rem);
+}
+
+h3 {
+  font-size: 1rem;
+}
+
+.section-label,
+.result-label,
+.field-label,
+.mini-card span {
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.view.is-hidden {
+  display: none;
+}
+
+.stack {
+  display: grid;
+  gap: 16px;
+}
+
+.card,
+.result,
+.checkpoint-card,
+.mini-card,
+.block,
+.calendar,
+.modal-card {
+  background: var(--panel);
+  border: 1px solid rgba(221, 213, 200, 0.95);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
+
+.card {
+  padding: 18px;
+}
+
+.upload,
+.field {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+}
+
+.upload {
+  position: relative;
+  cursor: pointer;
+}
+
+.upload-emphasis {
+  background: #f7f1fc;
+  border: 2px dashed var(--accent);
+  box-shadow: 0 0 0 4px rgba(88, 44, 131, 0.08);
+}
+
+.upload input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload strong {
+  font-size: 1rem;
+}
+
+.upload small,
+.note,
+.modal-copy {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.controls,
+.actions,
+.mini-stats,
+.breakdowns {
+  display: grid;
+  gap: 12px;
+}
+
+.controls {
+  grid-template-columns: 1.1fr 1fr 1fr;
+}
+
+.actions {
+  grid-template-columns: 1fr 1fr;
+}
+
+.breakdowns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field input,
+.field select {
+  width: 100%;
+  min-height: 28px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  outline: none;
+}
+
+.field.is-disabled,
+.button.is-disabled {
+  opacity: 0.52;
+}
+
+.field select:disabled,
+.field input:disabled,
+.button:disabled {
+  cursor: not-allowed;
+}
+
+.button,
+.nav-button,
+.info-button {
+  border: 0;
+  cursor: pointer;
+  transition: transform 140ms ease;
+}
+
+.button:hover,
+.nav-button:hover,
+.info-button:hover {
+  transform: translateY(-1px);
+}
+
+.button {
+  padding: 14px 16px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.button-secondary {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.info-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 0 14px 0 8px;
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  font-weight: 700;
+}
+
+.info-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.result {
+  margin-top: 16px;
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.result strong {
+  display: block;
+  margin: 8px 0 10px;
+  font-size: clamp(2.9rem, 9vw, 4.7rem);
+  line-height: 0.95;
+}
+
+.result p {
+  color: var(--muted);
+}
+
+.checkpoint-card {
+  margin-top: 16px;
+  padding: 18px;
+}
+
+.checkpoint-card.is-hidden {
+  display: none;
+}
+
+.checkpoint-head,
+.stats-head,
+.calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toggle-card {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  background: var(--panel-soft);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toggle-card input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.toggle-switch {
+  position: relative;
+  width: 52px;
+  height: 32px;
+  border-radius: 999px;
+  background: #cfd8d7;
+  transition: background 140ms ease;
+}
+
+.toggle-switch::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(31, 42, 48, 0.16);
+  transition: transform 140ms ease;
+}
+
+.toggle-card input:checked + .toggle-switch {
+  background: var(--accent);
+}
+
+.toggle-card input:checked + .toggle-switch::after {
+  transform: translateX(20px);
+}
+
+.toggle-text {
+  font-size: 1rem;
+}
+
+.checkpoint-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 10px;
+}
+
+.checkpoint-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.checkpoint-badge.green {
+  background: #e6f6ea;
+  color: #1c6a36;
+}
+
+.checkpoint-badge.yellow {
+  background: var(--gold-soft);
+  color: #8a5d00;
+}
+
+.checkpoint-badge.red {
+  background: #fde7e6;
+  color: #a33d36;
+}
+
+.mini-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.mini-card,
+.block {
+  padding: 16px;
+}
+
+.mini-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.6rem;
+}
+
+.block {
+  display: grid;
+  gap: 12px;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+}
+
+.list.empty {
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--panel-soft);
+  color: var(--muted);
+}
+
+.row {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: var(--panel-soft);
+}
+
+.row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.row-title {
+  font-weight: 700;
+}
+
+.row-meta {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.calendar {
+  padding: 16px;
+}
+
+.calendar-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.weekday-row,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.weekday-row {
+  margin: 16px 0 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+.calendar-grid {
+  gap: 8px;
+}
+
+.day {
+  min-height: 76px;
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--panel-soft);
+  border: 1px solid transparent;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.day.other {
+  opacity: 0.45;
+}
+
+.day.in-range {
+  border-color: rgba(20, 111, 108, 0.28);
+}
+
+.day.has-hours {
+  background: #ecf6f5;
+}
+
+.day.boundary {
+  box-shadow: inset 0 0 0 2px rgba(20, 111, 108, 0.18);
+}
+
+.day-number {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.day-hours {
+  font-size: 0.76rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(31, 42, 48, 0.34);
+}
+
+.modal.is-hidden {
+  display: none;
+}
+
+.modal-card {
+  width: min(560px, 100%);
+  padding: 18px;
+}
+
+.modal-copy {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.modal-copy a {
+  color: var(--accent);
+}
+
+@media (max-width: 820px) {
+  .controls,
+  .actions,
+  .mini-stats,
+  .breakdowns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .shell {
+    width: min(100% - 16px, 920px);
+    padding-top: 16px;
+  }
+
+  .header-row,
+  .checkpoint-head,
+  .stats-head,
+  .calendar-head,
+  .row-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .toggle-card {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .weekday-row {
+    font-size: 0.72rem;
+  }
+
+  .calendar-grid {
+    gap: 6px;
+  }
+
+  .day {
+    min-height: 68px;
+    padding: 6px;
+    border-radius: 12px;
+  }
+}

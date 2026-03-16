@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GivePulse Hours Check</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <div class="header-row">
+          <h1>GivePulse Hours Check</h1>
+          <button id="infoButton" class="info-button" type="button" aria-label="How to get the CSV">
+            <span class="info-icon">i</span>
+            <span>How to get CSV</span>
+          </button>
+        </div>
+      </header>
+
+      <section id="mainView" class="view">
+        <div class="card stack">
+          <label class="upload upload-emphasis" for="csvInput">
+            <input id="csvInput" type="file" accept=".csv,text/csv" />
+            <span class="field-label">CSV file</span>
+            <strong id="sourceLabel">Upload your GivePulse impacts CSV</strong>
+            <small id="sourceMeta">Start here. Export your impacts CSV from GivePulse, then upload it here.</small>
+          </label>
+
+          <div class="controls">
+            <label class="field">
+              <span class="field-label">Semester</span>
+              <select id="presetSelect">
+                <option value="">Loading semesters…</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-label">Start</span>
+              <input id="startDate" type="date" />
+            </label>
+
+            <label class="field">
+              <span class="field-label">End</span>
+              <input id="endDate" type="date" />
+            </label>
+          </div>
+
+          <div class="actions">
+            <button id="currentSemesterButton" class="button button-secondary" type="button">
+              Use current semester
+            </button>
+            <button id="viewStatsButton" class="button" type="button">
+              View detailed stats
+            </button>
+          </div>
+        </div>
+
+        <div class="result">
+          <p class="result-label">Hours</p>
+          <strong id="totalHours">0 hrs</strong>
+          <p id="totalMeta">Choose a range to calculate your total hours.</p>
+        </div>
+
+        <section id="checkpointCard" class="checkpoint-card is-hidden">
+          <div class="checkpoint-head">
+            <div>
+              <p class="section-label">Checkpoint status</p>
+              <h2 id="checkpointTitle">Spring 2026 checkpoint</h2>
+            </div>
+            <label class="toggle-card">
+              <input id="seniorToggle" type="checkbox" />
+              <span class="toggle-switch" aria-hidden="true"></span>
+              <span class="toggle-text">Senior Bonner/Canale</span>
+            </label>
+          </div>
+          <div class="checkpoint-status">
+            <span id="checkpointBadge" class="checkpoint-badge">Green</span>
+            <p id="checkpointSummary">You're on track.</p>
+          </div>
+          <p id="checkpointMeta" class="note"></p>
+        </section>
+      </section>
+
+      <section id="statsView" class="view is-hidden">
+        <div class="card stack">
+          <div class="stats-head">
+            <div>
+              <p class="section-label">Detailed stats</p>
+              <h2 id="statsRange">Selected range</h2>
+            </div>
+            <button id="backButton" class="button button-secondary" type="button">
+              Back
+            </button>
+          </div>
+
+          <div class="mini-stats">
+            <article class="mini-card">
+              <span>Impacts</span>
+              <strong id="impactCount">0</strong>
+            </article>
+            <article class="mini-card">
+              <span>Active weeks</span>
+              <strong id="weekCount">0</strong>
+            </article>
+            <article class="mini-card">
+              <span>Avg / week</span>
+              <strong id="averageWeek">0 hrs</strong>
+            </article>
+          </div>
+
+          <div class="breakdowns">
+            <section class="block">
+              <h3>By site</h3>
+              <div id="siteBreakdown" class="list empty">No data yet.</div>
+            </section>
+            <section class="block">
+              <h3>By month</h3>
+              <div id="monthBreakdown" class="list empty">No data yet.</div>
+            </section>
+          </div>
+
+          <section class="calendar">
+            <div class="calendar-head">
+              <h3 id="calendarTitle">Month</h3>
+              <div class="calendar-nav">
+                <button id="prevMonthButton" class="nav-button" type="button" aria-label="Previous month">
+                  ←
+                </button>
+                <button id="nextMonthButton" class="nav-button" type="button" aria-label="Next month">
+                  →
+                </button>
+              </div>
+            </div>
+
+            <div class="weekday-row">
+              <span>Sun</span>
+              <span>Mon</span>
+              <span>Tue</span>
+              <span>Wed</span>
+              <span>Thu</span>
+              <span>Fri</span>
+              <span>Sat</span>
+            </div>
+
+            <div id="calendarGrid" class="calendar-grid"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <div id="infoModal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+      <div class="modal-card">
+        <div class="stats-head">
+          <div>
+            <p class="section-label">How to get the CSV</p>
+            <h2 id="infoTitle">Export your GivePulse impacts</h2>
+          </div>
+          <button id="closeInfoButton" class="button button-secondary" type="button">
+            Close
+          </button>
+        </div>
+        <div class="modal-copy">
+          <p>
+            First go to
+            <a href="https://sewanee.givepulse.com/dashboard/impacts" target="_blank" rel="noreferrer">
+              https://sewanee.givepulse.com/dashboard/impacts
+            </a>.
+          </p>
+          <p>Then on that page click <strong>Export Impacts</strong>. If you do not see it, scroll down.</p>
+          <p>Then upload that saved file to this website.</p>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
