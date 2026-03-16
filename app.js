@@ -662,7 +662,8 @@ function parseSlashDate(value) {
     return null;
   }
 
-  const [month, day, year] = value.split("/").map(Number);
+  const [month, day, rawYear] = value.split("/").map(Number);
+  const year = rawYear < 100 ? 2000 + rawYear : rawYear;
   if (!month || !day || !year) {
     return null;
   }
