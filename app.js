@@ -30,6 +30,7 @@ const state = {
   selectedStart: "",
   selectedEnd: "",
   currentMonth: startOfMonth(new Date()),
+  selectedDay: "",
   currentSemesterId: "",
   currentAcademicYear: "",
   isSeniorBonner: false,
@@ -76,6 +77,10 @@ function cacheRefs() {
   refs.calendarGrid = document.querySelector("#calendarGrid");
   refs.prevMonthButton = document.querySelector("#prevMonthButton");
   refs.nextMonthButton = document.querySelector("#nextMonthButton");
+  refs.dayDetailTitle = document.querySelector("#dayDetailTitle");
+  refs.dayDetailHours = document.querySelector("#dayDetailHours");
+  refs.dayDetailMeta = document.querySelector("#dayDetailMeta");
+  refs.dayDetailList = document.querySelector("#dayDetailList");
 }
 
 function bindEvents() {
@@ -100,12 +105,18 @@ function bindEvents() {
   });
   refs.prevMonthButton.addEventListener("click", () => {
     state.currentMonth = addMonths(state.currentMonth, -1);
+    syncSelectedDay();
     renderCalendar();
+    renderDayDetails();
   });
   refs.nextMonthButton.addEventListener("click", () => {
     state.currentMonth = addMonths(state.currentMonth, 1);
+    syncSelectedDay();
     renderCalendar();
+    renderDayDetails();
   });
+  refs.calendarGrid.addEventListener("click", handleCalendarDaySelection);
+  refs.calendarGrid.addEventListener("keydown", handleCalendarDayKeydown);
 }
 
 async function loadApp() {
@@ -218,7 +229,9 @@ function showStatsView() {
   } else if (state.selectedEnd) {
     state.currentMonth = startOfMonth(parseIsoDate(state.selectedEnd));
   }
+  syncSelectedDay();
   renderCalendar();
+  renderDayDetails();
   refs.mainView.classList.add("is-hidden");
   refs.statsView.classList.remove("is-hidden");
 }
@@ -252,10 +265,12 @@ function setControlsEnabled(enabled) {
 
 function renderAll() {
   state.filteredEntries = filterEntriesByRange(state.allEntries, state.selectedStart, state.selectedEnd);
+  syncSelectedDay();
   renderMainResult();
   renderCheckpointStatus();
   renderStats();
   renderCalendar();
+  renderDayDetails();
 }
 
 function renderMainResult() {
@@ -365,24 +380,73 @@ function renderCalendar() {
 
   refs.calendarGrid.innerHTML = days
     .map((day) => {
+      const dayIso = formatIsoDate(day);
       const hours = hoursByDate.get(formatIsoDate(day)) || 0;
       const className = [
         "day",
         day.getMonth() !== month.getMonth() ? "other" : "",
         rangeStart && rangeEnd && day >= rangeStart && day <= rangeEnd ? "in-range" : "",
         hours > 0 ? "has-hours" : "",
+        state.selectedDay === dayIso ? "selected" : "",
         (rangeStart && sameDate(day, rangeStart)) || (rangeEnd && sameDate(day, rangeEnd)) ? "boundary" : "",
       ]
         .filter(Boolean)
         .join(" ");
 
       return `
-        <article class="${className}">
+        <button
+          class="${className}"
+          type="button"
+          data-date="${dayIso}"
+          aria-pressed="${state.selectedDay === dayIso ? "true" : "false"}"
+          aria-label="${buildCalendarDayAriaLabel(day, hours)}"
+        >
           <span class="day-number">${day.getDate()}</span>
           <span class="day-hours">${hours > 0 ? formatHours(hours) : ""}</span>
-        </article>
+        </button>
       `;
     })
+    .join("");
+}
+
+function renderDayDetails() {
+  const entries = getEntriesForSelectedDay();
+  const selectedDate = state.selectedDay ? parseIsoDate(state.selectedDay) : null;
+
+  if (!selectedDate) {
+    refs.dayDetailTitle.textContent = "Choose a day";
+    refs.dayDetailHours.textContent = "0 hrs";
+    refs.dayDetailMeta.textContent = "Click a day in the calendar to view where and when you worked.";
+    refs.dayDetailList.className = "list empty";
+    refs.dayDetailList.textContent = "No day selected yet.";
+    return;
+  }
+
+  refs.dayDetailTitle.textContent = formatLongWeekdayDate(selectedDate);
+  refs.dayDetailHours.textContent = formatHours(entries.reduce((sum, entry) => sum + entry.hours, 0));
+  refs.dayDetailMeta.textContent = entries.length
+    ? `${entries.length} impact${entries.length === 1 ? "" : "s"} logged on this day.`
+    : "No logged impacts on this day.";
+
+  if (!entries.length) {
+    refs.dayDetailList.className = "list empty";
+    refs.dayDetailList.textContent = "No work was logged for this day in the selected range.";
+    return;
+  }
+
+  refs.dayDetailList.className = "list";
+  refs.dayDetailList.innerHTML = entries
+    .map(
+      (entry) => `
+        <article class="row day-entry">
+          <div class="row-top">
+            <span class="row-title">${escapeHtml(entry.site)}</span>
+            <strong>${formatHours(entry.hours)}</strong>
+          </div>
+          <span class="row-meta">${escapeHtml(formatEntryTime(entry))}</span>
+        </article>
+      `
+    )
     .join("");
 }
 
@@ -462,6 +526,20 @@ function normalizeCsvRows(rows) {
         date,
         hours: parseHours(row),
         site: cleanText(row.Group) || cleanText(row.Organizer) || firstAddressChunk(cleanText(row["Event Address"])) || "No site listed",
+        startTime: getTimeField(row, [
+          "Start Time",
+          "Impact Start Time",
+          "Service Start Time",
+          "Shift Start Time",
+          "Check In Time",
+        ]),
+        endTime: getTimeField(row, [
+          "End Time",
+          "Impact End Time",
+          "Service End Time",
+          "Shift End Time",
+          "Check Out Time",
+        ]),
       };
     })
     .filter(Boolean);
@@ -534,6 +612,65 @@ function aggregateHoursByDate(entries) {
     map.set(key, (map.get(key) || 0) + entry.hours);
   });
   return map;
+}
+
+function getEntriesForSelectedDay() {
+  if (!state.selectedDay) {
+    return [];
+  }
+
+  return state.filteredEntries
+    .filter((entry) => formatIsoDate(entry.date) === state.selectedDay)
+    .slice()
+    .sort(compareEntriesByTime);
+}
+
+function syncSelectedDay() {
+  if (state.selectedDay) {
+    const selectedDate = parseIsoDate(state.selectedDay);
+    const isInCurrentMonth =
+      selectedDate.getFullYear() === state.currentMonth.getFullYear() &&
+      selectedDate.getMonth() === state.currentMonth.getMonth();
+    const stillVisible = state.filteredEntries.some((entry) => formatIsoDate(entry.date) === state.selectedDay);
+    if (stillVisible && isInCurrentMonth) {
+      return;
+    }
+  }
+
+  const monthKey = `${state.currentMonth.getFullYear()}-${state.currentMonth.getMonth()}`;
+  const firstInMonth = state.filteredEntries.find((entry) => {
+    const entryMonth = `${entry.date.getFullYear()}-${entry.date.getMonth()}`;
+    return entryMonth === monthKey;
+  });
+
+  state.selectedDay = firstInMonth ? formatIsoDate(firstInMonth.date) : "";
+}
+
+function handleCalendarDaySelection(event) {
+  const dayButton = event.target.closest("[data-date]");
+  if (!dayButton) {
+    return;
+  }
+
+  state.selectedDay = dayButton.dataset.date || "";
+  renderCalendar();
+  renderDayDetails();
+}
+
+function handleCalendarDayKeydown(event) {
+  if (event.key !== "Enter" && event.key !== " ") {
+    return;
+  }
+
+  const dayButton = event.target.closest("[data-date]");
+  if (!dayButton) {
+    return;
+  }
+
+  event.preventDefault();
+  state.selectedDay = dayButton.dataset.date || "";
+  renderCalendar();
+  renderDayDetails();
 }
 
 function filterEntriesByRange(entries, startIso, endIso) {
@@ -691,6 +828,15 @@ function formatLongDate(date) {
   });
 }
 
+function formatLongWeekdayDate(date) {
+  return date.toLocaleDateString(undefined, {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function formatMonthLabel(date) {
   return date.toLocaleDateString(undefined, {
     month: "long",
@@ -712,6 +858,112 @@ function formatHours(value) {
   }).format(value);
 
   return `${formatted} hrs`;
+}
+
+function getTimeField(row, keys) {
+  for (const key of keys) {
+    const value = cleanText(row[key]);
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+}
+
+function buildCalendarDayAriaLabel(day, hours) {
+  const segments = [formatLongWeekdayDate(day)];
+
+  if (hours > 0) {
+    segments.push(`${formatHours(hours)} logged`);
+  } else {
+    segments.push("No hours logged");
+  }
+
+  return segments.join(". ");
+}
+
+function compareEntriesByTime(a, b) {
+  const first = getComparableTimeValue(a.startTime) ?? getComparableTimeValue(a.endTime) ?? Number.MAX_SAFE_INTEGER;
+  const second = getComparableTimeValue(b.startTime) ?? getComparableTimeValue(b.endTime) ?? Number.MAX_SAFE_INTEGER;
+
+  return first - second || b.hours - a.hours || a.site.localeCompare(b.site);
+}
+
+function getComparableTimeValue(value) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = parseClockValue(value);
+  return parsed ? parsed.hours * 60 + parsed.minutes : null;
+}
+
+function formatEntryTime(entry) {
+  const start = formatClockValue(entry.startTime);
+  const end = formatClockValue(entry.endTime);
+
+  if (start && end) {
+    return `${start} - ${end}`;
+  }
+
+  if (start) {
+    return `Started at ${start}`;
+  }
+
+  if (end) {
+    return `Ended at ${end}`;
+  }
+
+  return "Time not listed";
+}
+
+function formatClockValue(value) {
+  const parsed = parseClockValue(value);
+  if (!parsed) {
+    return cleanText(value);
+  }
+
+  const date = new Date(2000, 0, 1, parsed.hours, parsed.minutes);
+  return date.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function parseClockValue(value) {
+  const cleaned = cleanText(value).toLowerCase();
+  if (!cleaned) {
+    return null;
+  }
+
+  const match = cleaned.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/);
+  if (!match) {
+    return null;
+  }
+
+  let hours = Number(match[1]);
+  const minutes = Number(match[2] || 0);
+  const meridiem = match[3];
+
+  if (minutes > 59 || hours > 24) {
+    return null;
+  }
+
+  if (meridiem) {
+    if (hours === 12) {
+      hours = 0;
+    }
+    if (meridiem === "pm") {
+      hours += 12;
+    }
+  }
+
+  if (hours === 24) {
+    hours = 0;
+  }
+
+  return { hours, minutes };
 }
 
 function cleanText(value) {
