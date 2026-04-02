@@ -768,7 +768,7 @@ function getCheckpointStatus(hours, target) {
 
 function buildCalendarDays(monthDate) {
   const first = startOfMonth(monthDate);
-  const firstVisible = addDays(first, -first.getDay());
+  const firstVisible = addDays(first, -((first.getDay() + 1) % 7));
   return Array.from({ length: 42 }, (_, index) => addDays(firstVisible, index));
 }
 
@@ -779,7 +779,7 @@ function startOfMonth(date) {
 function startOfWeek(date) {
   const cloned = new Date(date.getFullYear(), date.getMonth(), date.getDate());
   const day = cloned.getDay();
-  const distance = day === 0 ? -6 : 1 - day;
+  const distance = -((day + 1) % 7);
   cloned.setDate(cloned.getDate() + distance);
   return cloned;
 }
