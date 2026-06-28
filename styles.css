@@ -526,15 +526,29 @@ h3 {
   place-items: center;
   padding: 16px;
   background: rgba(31, 42, 48, 0.34);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 180ms ease, visibility 180ms ease;
 }
 
 .modal.is-hidden {
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .modal-card {
   width: min(560px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
   padding: 18px;
+  transform: translateY(0) scale(1);
+  transition: transform 180ms ease;
+  will-change: transform;
+}
+
+.modal.is-hidden .modal-card {
+  transform: translateY(8px) scale(0.98);
 }
 
 .modal-copy {
@@ -589,5 +603,27 @@ h3 {
     min-height: 68px;
     padding: 6px;
     border-radius: 12px;
+  }
+
+  .modal {
+    align-items: end;
+    padding: 12px;
+  }
+
+  .modal-card {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    border-radius: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modal-card {
+    transition: none;
+  }
+
+  .modal.is-hidden .modal-card {
+    transform: none;
   }
 }

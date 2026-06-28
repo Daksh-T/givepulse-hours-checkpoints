@@ -1,4 +1,5 @@
 const SENIOR_PREFERENCE_KEY = "givepulse_senior_bonner_canale";
+const CSV_HELP_SEEN_KEY = "givepulse_csv_help_seen";
 const SPRING_2026_CHECKPOINTS = [
   { label: "Checkpoint 1", date: "2026-02-13", seniorTarget: 23.4, otherTarget: 26.6 },
   { label: "Checkpoint 2", date: "2026-03-20", seniorTarget: 58.5, otherTarget: 69 },
@@ -96,11 +97,16 @@ function bindEvents() {
     writeBooleanPreference(SENIOR_PREFERENCE_KEY, state.isSeniorBonner);
     renderCheckpointStatus();
   });
-  refs.infoButton.addEventListener("click", () => refs.infoModal.classList.remove("is-hidden"));
-  refs.closeInfoButton.addEventListener("click", () => refs.infoModal.classList.add("is-hidden"));
+  refs.infoButton.addEventListener("click", showInfoModal);
+  refs.closeInfoButton.addEventListener("click", hideInfoModal);
   refs.infoModal.addEventListener("click", (event) => {
     if (event.target === refs.infoModal) {
-      refs.infoModal.classList.add("is-hidden");
+      hideInfoModal();
+    }
+  });
+  refs.infoModal.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      hideInfoModal();
     }
   });
   refs.prevMonthButton.addEventListener("click", () => {
@@ -123,6 +129,10 @@ async function loadApp() {
   const today = new Date();
   state.isSeniorBonner = readBooleanPreference(SENIOR_PREFERENCE_KEY);
   refs.seniorToggle.checked = state.isSeniorBonner;
+  if (!readBooleanPreference(CSV_HELP_SEEN_KEY)) {
+    showInfoModal();
+    writeBooleanPreference(CSV_HELP_SEEN_KEY, true);
+  }
   const context = getAcademicYearContext(today);
   state.currentAcademicYear = context.academicYear;
   state.semesters = getVisibleSemestersForCurrentAcademicYear(today);
@@ -130,6 +140,17 @@ async function loadApp() {
   renderPresetOptions();
   setControlsEnabled(false);
   renderAll();
+}
+
+function showInfoModal() {
+  refs.infoModal.classList.remove("is-hidden");
+  refs.infoModal.setAttribute("aria-hidden", "false");
+  refs.closeInfoButton.focus({ preventScroll: true });
+}
+
+function hideInfoModal() {
+  refs.infoModal.classList.add("is-hidden");
+  refs.infoModal.setAttribute("aria-hidden", "true");
 }
 
 async function handleCsvUpload(event) {
