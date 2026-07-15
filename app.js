@@ -1,14 +1,24 @@
 const SENIOR_PREFERENCE_KEY = "givepulse_senior_bonner_canale";
 const CSV_HELP_SEEN_KEY = "givepulse_csv_help_seen";
-const SPRING_2026_CHECKPOINTS = [
-  { label: "Checkpoint 1", date: "2026-02-13", seniorTarget: 23.4, otherTarget: 26.6 },
-  { label: "Checkpoint 2", date: "2026-03-20", seniorTarget: 58.5, otherTarget: 69 },
-  { label: "Checkpoint 3", date: "2026-04-17", seniorTarget: 87.75, otherTarget: 103.5 },
-  { label: "Checkpoint 4", date: "2026-05-14", seniorTarget: 117, otherTarget: 133 },
-].map((checkpoint) => ({
-  ...checkpoint,
-  date: parseIsoDate(checkpoint.date),
-}));
+const CHECKPOINT_TARGETS = [
+  { seniorTarget: 23.4, otherTarget: 26.6 },
+  { seniorTarget: 58.5, otherTarget: 69 },
+  { seniorTarget: 87.75, otherTarget: 103.5 },
+  { seniorTarget: 117, otherTarget: 133 },
+];
+
+const CHECKPOINTS_BY_SEMESTER = {
+  "fall-2026": ["2026-09-25", "2026-10-30", "2026-11-20", "2026-12-10"],
+  "spring-2027": ["2027-02-12", "2027-03-19", "2027-04-16", "2027-04-28"],
+};
+
+Object.entries(CHECKPOINTS_BY_SEMESTER).forEach(([semesterId, dates]) => {
+  CHECKPOINTS_BY_SEMESTER[semesterId] = dates.map((date, index) => ({
+    label: `Checkpoint ${index + 1}`,
+    date: parseIsoDate(date),
+    ...CHECKPOINT_TARGETS[index],
+  }));
+});
 
 // Semester ranges derived from calendar.ics, anchored from Fall 2025 onward.
 const ALL_SEMESTERS = [
@@ -253,13 +263,25 @@ function showStatsView() {
   syncSelectedDay();
   renderCalendar();
   renderDayDetails();
-  refs.mainView.classList.add("is-hidden");
-  refs.statsView.classList.remove("is-hidden");
+  transitionViews(refs.mainView, refs.statsView);
 }
 
 function showMainView() {
-  refs.statsView.classList.add("is-hidden");
-  refs.mainView.classList.remove("is-hidden");
+  transitionViews(refs.statsView, refs.mainView);
+}
+
+function transitionViews(fromView, toView) {
+  const swapViews = () => {
+    fromView.classList.add("is-hidden");
+    toView.classList.remove("is-hidden");
+  };
+
+  if (document.startViewTransition && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.startViewTransition(swapViews);
+    return;
+  }
+
+  swapViews();
 }
 
 function renderPresetOptions() {
@@ -338,12 +360,13 @@ function renderCheckpointStatus() {
     formatIsoDate(currentPreset.start) === state.selectedStart &&
     formatIsoDate(currentPreset.end) === state.selectedEnd;
 
-  if (!isCurrentSemesterView || currentPreset.id !== "spring-2026") {
+  const semesterCheckpoints = currentPreset && CHECKPOINTS_BY_SEMESTER[currentPreset.id];
+  if (!isCurrentSemesterView || !semesterCheckpoints) {
     refs.checkpointCard.classList.add("is-hidden");
     return;
   }
 
-  const checkpoint = getCurrentCheckpoint(new Date());
+  const checkpoint = getCurrentCheckpoint(semesterCheckpoints, new Date());
   if (!checkpoint) {
     refs.checkpointCard.classList.add("is-hidden");
     return;
@@ -737,16 +760,18 @@ function getCurrentSemesterPresetId(semesters, now) {
 }
 
 function getAcademicYearContext(now) {
-  const month = now.getMonth() + 1;
-  const year = now.getFullYear();
+  const activeSemester = ALL_SEMESTERS.find((semester) => now >= semester.start && now <= semester.end);
+  const nextSemester = ALL_SEMESTERS.find((semester) => now < semester.start);
+  const semester = activeSemester || nextSemester || ALL_SEMESTERS[ALL_SEMESTERS.length - 1];
 
-  if (month >= 8) {
+  if (semester) {
     return {
-      term: "fall",
-      academicYear: `${year}-${String(year + 1).slice(-2)}`,
+      term: semester.term,
+      academicYear: semester.academicYear,
     };
   }
 
+  const year = now.getFullYear();
   return {
     term: "spring",
     academicYear: `${year - 1}-${String(year).slice(-2)}`,
@@ -761,16 +786,16 @@ function getPresetById(semesters, presetId) {
   return semesters.find((semester) => semester.id === presetId) || null;
 }
 
-function getCurrentCheckpoint(now) {
-  const current = SPRING_2026_CHECKPOINTS.find((checkpoint) => now <= checkpoint.date);
-  return current || SPRING_2026_CHECKPOINTS[SPRING_2026_CHECKPOINTS.length - 1];
+function getCurrentCheckpoint(checkpoints, now) {
+  const current = checkpoints.find((checkpoint) => now <= checkpoint.date);
+  return current || checkpoints[checkpoints.length - 1];
 }
 
 function getCheckpointStatus(hours, target) {
   if (hours >= target) {
     return {
       zone: "green",
-      summary: "You are in the green for this checkpoint.",
+      summary: "You are in the green for this checkpoint!",
     };
   }
 

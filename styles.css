@@ -10,6 +10,23 @@
   --gold: #ffb81c;
   --gold-soft: #fff1c9;
   --shadow: 0 16px 34px rgba(31, 42, 48, 0.08);
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111416;
+    --panel: #1b2023;
+    --panel-soft: #252b2f;
+    --ink: #f3f0ea;
+    --muted: #aeb8bc;
+    --line: #3a4246;
+    --accent: #c39bea;
+    --accent-soft: #38264a;
+    --gold: #ffca57;
+    --gold-soft: #493b1d;
+    --shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+  }
 }
 
 * {
@@ -22,6 +39,8 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: "Avenir Next", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
@@ -49,9 +68,14 @@ select {
 
 h1,
 h2,
-h3,
+h3 {
+  margin: 0;
+  text-wrap: balance;
+}
+
 p {
   margin: 0;
+  text-wrap: pretty;
 }
 
 h1 {
@@ -159,6 +183,7 @@ h3 {
 
 .breakdowns {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
 }
 
 .field input,
@@ -194,6 +219,12 @@ h3 {
 .nav-button:hover,
 .info-button:hover {
   transform: translateY(-1px);
+}
+
+.button:active,
+.nav-button:active,
+.info-button:active {
+  transform: scale(0.96);
 }
 
 .button {
@@ -246,6 +277,7 @@ h3 {
   margin: 8px 0 10px;
   font-size: clamp(2.9rem, 9vw, 4.7rem);
   line-height: 0.95;
+  font-variant-numeric: tabular-nums;
 }
 
 .result p {
@@ -358,6 +390,41 @@ h3 {
   color: #a33d36;
 }
 
+@media (prefers-color-scheme: dark) {
+  .card,
+  .result,
+  .checkpoint-card,
+  .mini-card,
+  .block,
+  .calendar,
+  .modal-card {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .upload-emphasis {
+    background: #2d2039;
+    box-shadow: 0 0 0 4px rgba(195, 155, 234, 0.1);
+  }
+
+  .checkpoint-badge.green {
+    background: #183f27;
+    color: #93e6aa;
+  }
+
+  .checkpoint-badge.yellow {
+    color: #ffd77d;
+  }
+
+  .checkpoint-badge.red {
+    background: #482523;
+    color: #ffaaa4;
+  }
+
+  .modal {
+    background: rgba(0, 0, 0, 0.58);
+  }
+}
+
 .mini-stats {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -371,6 +438,7 @@ h3 {
   display: block;
   margin-top: 8px;
   font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .block {
@@ -396,6 +464,11 @@ h3 {
   padding: 12px 14px;
   border-radius: 16px;
   background: var(--panel-soft);
+  transition: transform 160ms cubic-bezier(0.2, 0, 0, 1), background-color 160ms ease;
+}
+
+.row:hover {
+  transform: translateY(-1px);
 }
 
 .row-top {
@@ -461,6 +534,12 @@ h3 {
   gap: 6px;
   width: 100%;
   text-align: left;
+  transition: transform 160ms cubic-bezier(0.2, 0, 0, 1), background-color 160ms ease,
+    border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.day:hover {
+  transform: translateY(-1px);
 }
 
 .day.other {
@@ -498,6 +577,29 @@ h3 {
   font-size: 0.76rem;
   color: var(--accent);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+::view-transition-old(root) {
+  animation: 140ms ease-in both view-fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 220ms cubic-bezier(0.2, 0, 0, 1) both view-fade-in;
+}
+
+@keyframes view-fade-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes view-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 
 .day-details {
@@ -618,6 +720,15 @@ h3 {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
   .modal,
   .modal-card {
     transition: none;

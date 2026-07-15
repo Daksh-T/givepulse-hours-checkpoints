@@ -13,7 +13,8 @@ Static browser app for checking GivePulse hours from an exported impacts CSV.
 - Supports custom start and end dates
 - Includes a detailed stats view with breakdowns by site and month
 - Includes a calendar view with daily logged hours
-- Shows Spring 2026 checkpoint status with a senior Bonner/Canale toggle
+- Shows Fall 2026 and Spring 2027 checkpoint status with a senior Bonner/Canale toggle
+- Follows the device's light or dark appearance setting
 
 ## Semester behavior
 
@@ -33,14 +34,14 @@ The semester dropdown only shows the current academic year:
 
 ## Checkpoint behavior
 
-The checkpoint card only appears when the selected range is the actual current semester and that semester is Spring 2026.
+The checkpoint card only appears when the selected range is the actual current semester and checkpoint dates are configured for that semester.
 
 It uses these targets:
 
-- Checkpoint 1, February 13, 2026: `23.4` senior Bonners/Canales, `26.6` everyone else
-- Checkpoint 2, March 20, 2026: `58.5` senior Bonners/Canales, `69` everyone else
-- Checkpoint 3, April 17, 2026: `87.75` senior Bonners/Canales, `103.5` everyone else
-- Checkpoint 4, May 14, 2026: `117` senior Bonners/Canales, `133` everyone else
+- Fall 2026: September 25, October 30, November 20, and December 10
+- Spring 2027: February 12, March 19, April 16, and April 28
+
+Targets remain `23.4`, `58.5`, `87.75`, and `117` hours for senior Bonners/Canales, and `26.6`, `69`, `103.5`, and `133` hours for everyone else.
 
 Zones:
 
