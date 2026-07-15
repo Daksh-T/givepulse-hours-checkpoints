@@ -45,6 +45,7 @@ const state = {
   currentSemesterId: "",
   currentAcademicYear: "",
   isSeniorBonner: false,
+  isCustomRange: false,
 };
 
 const refs = {};
@@ -204,6 +205,7 @@ function applyRange(start, end, presetId = "") {
   refs.startDate.value = state.selectedStart;
   refs.endDate.value = state.selectedEnd;
   state.currentMonth = startOfMonth(start);
+  state.isCustomRange = !presetId;
   syncPresetSelection(presetId);
   renderAll();
 }
@@ -211,7 +213,8 @@ function applyRange(start, end, presetId = "") {
 function handlePresetChange(event) {
   const preset = getPresetById(state.semesters, event.target.value);
   if (!preset) {
-    syncPresetSelection("");
+    state.isCustomRange = true;
+    refs.presetSelect.value = "";
     renderAll();
     return;
   }
@@ -234,11 +237,17 @@ function handleManualRangeChange() {
   state.selectedStart = refs.startDate.value;
   state.selectedEnd = refs.endDate.value;
   state.currentMonth = startOfMonth(start);
+  state.isCustomRange = true;
   syncPresetSelection("");
   renderAll();
 }
 
 function syncPresetSelection(preferredPresetId = "") {
+  if (state.isCustomRange) {
+    refs.presetSelect.value = "";
+    return;
+  }
+
   const exactMatch =
     getPresetById(state.semesters, preferredPresetId) ||
     state.semesters.find(

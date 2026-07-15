@@ -7,6 +7,7 @@
   --line: #ddd5c8;
   --accent: #582c83;
   --accent-soft: #f1e8fb;
+  --accent-contrast: #ffffff;
   --gold: #ffb81c;
   --gold-soft: #fff1c9;
   --shadow: 0 16px 34px rgba(31, 42, 48, 0.08);
@@ -23,6 +24,7 @@
     --line: #3a4246;
     --accent: #c39bea;
     --accent-soft: #38264a;
+    --accent-contrast: #21142b;
     --gold: #ffca57;
     --gold-soft: #493b1d;
     --shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
@@ -231,7 +233,7 @@ h3 {
   padding: 14px 16px;
   border-radius: 999px;
   background: var(--accent);
-  color: #fff;
+  color: var(--accent-contrast);
   font-weight: 700;
 }
 
@@ -423,6 +425,7 @@ h3 {
   .modal {
     background: rgba(0, 0, 0, 0.58);
   }
+
 }
 
 .mini-stats {
@@ -578,6 +581,30 @@ h3 {
   color: var(--accent);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-color-scheme: dark) {
+  .day.in-range {
+    border-color: rgba(107, 210, 202, 0.28);
+  }
+
+  .day.has-hours {
+    background: #253b3c;
+  }
+
+  .day.boundary {
+    box-shadow: inset 0 0 0 2px rgba(107, 210, 202, 0.2);
+  }
+
+  .day.selected {
+    background: #352a41;
+    border-color: var(--accent);
+    box-shadow: inset 0 0 0 2px rgba(195, 155, 234, 0.24);
+  }
+
+  .day:focus-visible {
+    outline-color: rgba(195, 155, 234, 0.42);
+  }
 }
 
 ::view-transition-old(root) {
