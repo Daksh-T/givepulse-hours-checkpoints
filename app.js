@@ -24,7 +24,7 @@ Object.entries(CHECKPOINTS_BY_SEMESTER).forEach(([semesterId, dates]) => {
 const ALL_SEMESTERS = [
   { id: "fall-2025", label: "Fall 2025", academicYear: "2025-26", term: "fall", start: "2025-08-27", end: "2025-12-11" },
   { id: "spring-2026", label: "Spring 2026", academicYear: "2025-26", term: "spring", start: "2026-01-12", end: "2026-04-29" },
-  { id: "fall-2026", label: "Fall 2026", academicYear: "2026-27", term: "fall", start: "2026-08-26", end: "2026-12-10" },
+  { id: "fall-2026", label: "Fall 2026", academicYear: "2026-27", term: "fall", start: "2026-08-16", end: "2026-12-10" },
   { id: "spring-2027", label: "Spring 2027", academicYear: "2026-27", term: "spring", start: "2027-01-11", end: "2027-04-28" },
   { id: "fall-2027", label: "Fall 2027", academicYear: "2027-28", term: "fall", start: "2027-08-25", end: "2027-12-09" },
   { id: "spring-2028", label: "Spring 2028", academicYear: "2027-28", term: "spring", start: "2028-01-10", end: "2028-04-26" },
