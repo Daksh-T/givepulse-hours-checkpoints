@@ -24,7 +24,7 @@ Object.entries(CHECKPOINTS_BY_SEMESTER).forEach(([semesterId, dates]) => {
 const ALL_SEMESTERS = [
   { id: "fall-2025", label: "Fall 2025", academicYear: "2025-26", term: "fall", start: "2025-08-27", end: "2025-12-11" },
   { id: "spring-2026", label: "Spring 2026", academicYear: "2025-26", term: "spring", start: "2026-01-12", end: "2026-04-29" },
-  { id: "fall-2026", label: "Fall 2026", academicYear: "2026-27", term: "fall", start: "2026-08-26", end: "2026-12-10" },
+  { id: "fall-2026", label: "Fall 2026", academicYear: "2026-27", term: "fall", start: "2026-08-16", end: "2026-12-10" },
   { id: "spring-2027", label: "Spring 2027", academicYear: "2026-27", term: "spring", start: "2027-01-11", end: "2027-04-28" },
   { id: "fall-2027", label: "Fall 2027", academicYear: "2027-28", term: "fall", start: "2027-08-25", end: "2027-12-09" },
   { id: "spring-2028", label: "Spring 2028", academicYear: "2027-28", term: "spring", start: "2028-01-10", end: "2028-04-26" },
@@ -560,7 +560,7 @@ function parseCsv(text) {
   return dataRows.map((cells) => {
     const record = {};
     header.forEach((column, columnIndex) => {
-      record[column] = cells[columnIndex] ?? "";
+      record[column.replace(/^\uFEFF/, "").trim()] = cells[columnIndex] ?? "";
     });
     return record;
   });
@@ -569,23 +569,29 @@ function parseCsv(text) {
 function normalizeCsvRows(rows) {
   return rows
     .map((row, index) => {
-      const date = parseSlashDate(row["Start Date"]);
+      const date = parseEntryDate(row);
       if (!date) {
         return null;
       }
 
       return {
-        id: row["Impact ID"] || `row-${index + 1}`,
+        id: row["Impact ID"] || row.ID || `row-${index + 1}`,
         date,
         hours: parseHours(row),
-        site: cleanText(row.Group) || cleanText(row.Organizer) || firstAddressChunk(cleanText(row["Event Address"])) || "No site listed",
-        startTime: getTimeField(row, [
-          "Start Time",
-          "Impact Start Time",
-          "Service Start Time",
-          "Shift Start Time",
-          "Check In Time",
-        ]),
+        site:
+          cleanText(row.Group) ||
+          cleanText(row.Organization) ||
+          cleanText(row.Organizer) ||
+          firstAddressChunk(cleanText(row["Event Address"])) ||
+          "No site listed",
+        startTime:
+          getTimeField(row, [
+            "Start Time",
+            "Impact Start Time",
+            "Service Start Time",
+            "Shift Start Time",
+            "Check In Time",
+          ]) || getEmbeddedTime(row.Date),
         endTime: getTimeField(row, [
           "End Time",
           "Impact End Time",
@@ -602,6 +608,13 @@ function parseHours(row) {
   const direct = Number.parseFloat(cleanText(row["Hours Served"]));
   if (Number.isFinite(direct)) {
     return direct;
+  }
+
+  if (cleanText(row.Category).toLowerCase() === "time") {
+    const value = Number.parseFloat(cleanText(row.Value));
+    if (Number.isFinite(value)) {
+      return value;
+    }
   }
 
   const otherOutcome = cleanText(row["Other Outcome"]).toLowerCase();
@@ -759,8 +772,8 @@ function getVisibleSemestersForCurrentAcademicYear(now) {
 }
 
 function getCurrentSemesterPresetId(semesters, now) {
-  const context = getAcademicYearContext(now);
-  const exact = semesters.find((semester) => semester.term === context.term);
+  const anchor = getSemesterAnchor(now);
+  const exact = semesters.find((semester) => semester.id === anchor?.id);
   if (exact) {
     return exact.id;
   }
@@ -769,9 +782,7 @@ function getCurrentSemesterPresetId(semesters, now) {
 }
 
 function getAcademicYearContext(now) {
-  const activeSemester = ALL_SEMESTERS.find((semester) => now >= semester.start && now <= semester.end);
-  const nextSemester = ALL_SEMESTERS.find((semester) => now < semester.start);
-  const semester = activeSemester || nextSemester || ALL_SEMESTERS[ALL_SEMESTERS.length - 1];
+  const semester = getSemesterAnchor(now);
 
   if (semester) {
     return {
@@ -785,6 +796,21 @@ function getAcademicYearContext(now) {
     term: "spring",
     academicYear: `${year - 1}-${String(year).slice(-2)}`,
   };
+}
+
+function getSemesterAnchor(now) {
+  const activeSemester = ALL_SEMESTERS.find(
+    (semester) => now >= semester.start && now <= semester.end
+  );
+  if (activeSemester) {
+    return activeSemester;
+  }
+
+  return (
+    ALL_SEMESTERS.find((semester) => now < semester.start) ||
+    ALL_SEMESTERS[ALL_SEMESTERS.length - 1] ||
+    null
+  );
 }
 
 function getPresetById(semesters, presetId) {
@@ -861,6 +887,44 @@ function parseSlashDate(value) {
   }
 
   return new Date(year, month - 1, day);
+}
+
+function parseEntryDate(row) {
+  const slashDate = parseSlashDate(cleanText(row["Start Date"]));
+  if (slashDate) {
+    return slashDate;
+  }
+
+  const match = cleanText(row.Date).match(/^([A-Za-z]+)\s+(\d{1,2}),\s+(\d{4})/);
+  if (!match) {
+    return null;
+  }
+
+  const monthIndex = [
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "may",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "oct",
+    "nov",
+    "dec",
+  ].indexOf(match[1].slice(0, 3).toLowerCase());
+  if (monthIndex < 0) {
+    return null;
+  }
+
+  const date = new Date(Number(match[3]), monthIndex, Number(match[2]));
+  return date.getMonth() === monthIndex ? date : null;
+}
+
+function getEmbeddedTime(value) {
+  const match = cleanText(value).match(/,\s*(\d{1,2}:\d{2}\s*(?:AM|PM))$/i);
+  return match ? match[1] : "";
 }
 
 function parseIsoDate(value) {

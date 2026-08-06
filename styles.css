@@ -94,7 +94,6 @@ h3 {
 }
 
 .section-label,
-.result-label,
 .field-label,
 .mini-card span {
   font-size: 0.8rem;
@@ -276,7 +275,7 @@ h3 {
 
 .result strong {
   display: block;
-  margin: 8px 0 10px;
+  margin: 0 0 10px;
   font-size: clamp(2.9rem, 9vw, 4.7rem);
   line-height: 0.95;
   font-variant-numeric: tabular-nums;

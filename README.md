@@ -10,6 +10,7 @@ Static browser app for checking GivePulse hours from an exported impacts CSV.
 - Shows total hours immediately for the selected date range
 - Offers semester presets for the current academic year
 - Defaults to the current semester
+- Anchors to the next available semester between semester date ranges
 - Supports custom start and end dates
 - Includes a detailed stats view with breakdowns by site and month
 - Includes a calendar view with daily logged hours
@@ -56,7 +57,8 @@ The app includes an in-app help button with these instructions:
 1. Go to `https://sewanee.givepulse.com/dashboard/impacts`
 2. Click `Export Impacts`
 3. If you do not see it, scroll down
-4. Upload the saved CSV to this app
+4. Click *Export all* in that popup
+5. Upload the saved CSV to this app
 
 ## Files
 
