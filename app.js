@@ -1018,10 +1018,14 @@ function formatEntryTime(entry) {
   const end = formatClockValue(entry.endTime);
 
   if (start && end) {
-    return `${start} - ${end}`;
+    return `${start} to ${end}`;
   }
 
   if (start) {
+    const calculatedEnd = calculateEndTime(entry.startTime, entry.hours);
+    if (calculatedEnd) {
+      return `${start} to ${calculatedEnd}`;
+    }
     return `Started at ${start}`;
   }
 
@@ -1030,6 +1034,20 @@ function formatEntryTime(entry) {
   }
 
   return "Time not listed";
+}
+
+function calculateEndTime(startTime, durationHours) {
+  const parsed = parseClockValue(startTime);
+  if (!parsed || !Number.isFinite(durationHours) || durationHours <= 0) {
+    return "";
+  }
+
+  const date = new Date(2000, 0, 1, parsed.hours, parsed.minutes);
+  date.setMinutes(date.getMinutes() + Math.round(durationHours * 60));
+  return date.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function formatClockValue(value) {
