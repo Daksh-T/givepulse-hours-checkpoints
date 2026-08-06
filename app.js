@@ -91,7 +91,6 @@ function cacheRefs() {
   refs.nextMonthButton = document.querySelector("#nextMonthButton");
   refs.dayDetailTitle = document.querySelector("#dayDetailTitle");
   refs.dayDetailHours = document.querySelector("#dayDetailHours");
-  refs.dayDetailMeta = document.querySelector("#dayDetailMeta");
   refs.dayDetailList = document.querySelector("#dayDetailList");
 }
 
@@ -469,7 +468,6 @@ function renderDayDetails() {
   if (!selectedDate) {
     refs.dayDetailTitle.textContent = "Choose a day";
     refs.dayDetailHours.textContent = "0 hrs";
-    refs.dayDetailMeta.textContent = "Click a day in the calendar to view where and when you worked.";
     refs.dayDetailList.className = "list empty";
     refs.dayDetailList.textContent = "No day selected yet.";
     return;
@@ -477,13 +475,10 @@ function renderDayDetails() {
 
   refs.dayDetailTitle.textContent = formatLongWeekdayDate(selectedDate);
   refs.dayDetailHours.textContent = formatHours(entries.reduce((sum, entry) => sum + entry.hours, 0));
-  refs.dayDetailMeta.textContent = entries.length
-    ? `${entries.length} impact${entries.length === 1 ? "" : "s"} logged on this day.`
-    : "No logged impacts on this day.";
 
   if (!entries.length) {
     refs.dayDetailList.className = "list empty";
-    refs.dayDetailList.textContent = "No work was logged for this day in the selected range.";
+    refs.dayDetailList.textContent = "No logged impacts on this day.";
     return;
   }
 
