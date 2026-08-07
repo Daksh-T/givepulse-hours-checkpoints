@@ -57,7 +57,7 @@ The app includes an in-app help button with these instructions:
 1. Go to `https://sewanee.givepulse.com/dashboard/impacts`
 2. Click `Export Impacts`
 3. If you do not see it, scroll down
-4. Click **Export all** in that popup
+4. Click **Export all** in the dropdown
 5. Upload the saved CSV to this app
 
 ## Files

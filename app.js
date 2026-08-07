@@ -46,6 +46,9 @@ const state = {
   currentAcademicYear: "",
   isSeniorBonner: false,
   isCustomRange: false,
+  calendarTouchStart: null,
+  modalReturnFocus: null,
+  modalFocusTimer: 0,
 };
 
 const refs = {};
@@ -57,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function cacheRefs() {
+  refs.appContent = document.querySelector("main.shell");
   refs.mainView = document.querySelector("#mainView");
   refs.statsView = document.querySelector("#statsView");
   refs.csvInput = document.querySelector("#csvInput");
@@ -86,11 +90,10 @@ function cacheRefs() {
   refs.siteBreakdown = document.querySelector("#siteBreakdown");
   refs.monthBreakdown = document.querySelector("#monthBreakdown");
   refs.calendarTitle = document.querySelector("#calendarTitle");
+  refs.calendar = document.querySelector(".calendar");
   refs.calendarGrid = document.querySelector("#calendarGrid");
   refs.prevMonthButton = document.querySelector("#prevMonthButton");
   refs.nextMonthButton = document.querySelector("#nextMonthButton");
-  refs.dayDetailTitle = document.querySelector("#dayDetailTitle");
-  refs.dayDetailHours = document.querySelector("#dayDetailHours");
   refs.dayDetailList = document.querySelector("#dayDetailList");
 }
 
@@ -114,25 +117,14 @@ function bindEvents() {
       hideInfoModal();
     }
   });
-  refs.infoModal.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      hideInfoModal();
-    }
-  });
-  refs.prevMonthButton.addEventListener("click", () => {
-    state.currentMonth = addMonths(state.currentMonth, -1);
-    syncSelectedDay();
-    renderCalendar();
-    renderDayDetails();
-  });
-  refs.nextMonthButton.addEventListener("click", () => {
-    state.currentMonth = addMonths(state.currentMonth, 1);
-    syncSelectedDay();
-    renderCalendar();
-    renderDayDetails();
-  });
+  document.addEventListener("keydown", handleModalKeyboard);
+  refs.prevMonthButton.addEventListener("click", () => moveCalendarMonth(-1));
+  refs.nextMonthButton.addEventListener("click", () => moveCalendarMonth(1));
   refs.calendarGrid.addEventListener("click", handleCalendarDaySelection);
   refs.calendarGrid.addEventListener("keydown", handleCalendarDayKeydown);
+  refs.calendar.addEventListener("touchstart", handleCalendarTouchStart, { passive: true });
+  refs.calendar.addEventListener("touchend", handleCalendarTouchEnd, { passive: false });
+  refs.calendar.addEventListener("touchcancel", clearCalendarTouch);
 }
 
 async function loadApp() {
@@ -153,14 +145,81 @@ async function loadApp() {
 }
 
 function showInfoModal() {
+  const activeElement = document.activeElement;
+  state.modalReturnFocus =
+    activeElement instanceof HTMLElement && activeElement !== document.body ? activeElement : refs.infoButton;
+  refs.appContent.inert = true;
+  refs.appContent.setAttribute("aria-hidden", "true");
   refs.infoModal.classList.remove("is-hidden");
   refs.infoModal.setAttribute("aria-hidden", "false");
-  refs.closeInfoButton.focus({ preventScroll: true });
+  window.clearTimeout(state.modalFocusTimer);
+  state.modalFocusTimer = window.setTimeout(() => {
+    if (!refs.infoModal.classList.contains("is-hidden")) {
+      refs.closeInfoButton.focus({ preventScroll: true });
+    }
+  }, 100);
 }
 
 function hideInfoModal() {
+  if (refs.infoModal.classList.contains("is-hidden")) {
+    return;
+  }
+
+  window.clearTimeout(state.modalFocusTimer);
   refs.infoModal.classList.add("is-hidden");
   refs.infoModal.setAttribute("aria-hidden", "true");
+  refs.appContent.inert = false;
+  refs.appContent.removeAttribute("aria-hidden");
+
+  const returnFocus = state.modalReturnFocus;
+  state.modalReturnFocus = null;
+  if (returnFocus?.isConnected) {
+    returnFocus.focus({ preventScroll: true });
+  } else {
+    refs.infoButton.focus({ preventScroll: true });
+  }
+}
+
+function handleModalKeyboard(event) {
+  if (refs.infoModal.classList.contains("is-hidden")) {
+    return;
+  }
+
+  if (event.key === "Escape") {
+    event.preventDefault();
+    hideInfoModal();
+    return;
+  }
+
+  if (event.key !== "Tab") {
+    return;
+  }
+
+  const focusableElements = getModalFocusableElements();
+  if (!focusableElements.length) {
+    event.preventDefault();
+    return;
+  }
+
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  const activeElement = document.activeElement;
+
+  if (event.shiftKey && (activeElement === firstElement || !refs.infoModal.contains(activeElement))) {
+    event.preventDefault();
+    lastElement.focus();
+  } else if (!event.shiftKey && (activeElement === lastElement || !refs.infoModal.contains(activeElement))) {
+    event.preventDefault();
+    firstElement.focus();
+  }
+}
+
+function getModalFocusableElements() {
+  return Array.from(
+    refs.infoModal.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )
+  ).filter((element) => element.getClientRects().length > 0);
 }
 
 async function handleCsvUpload(event) {
@@ -454,7 +513,7 @@ function renderCalendar() {
           aria-label="${buildCalendarDayAriaLabel(day, hours)}"
         >
           <span class="day-number">${day.getDate()}</span>
-          <span class="day-hours">${hours > 0 ? formatHours(hours) : ""}</span>
+          <span class="day-hours">${hours > 0 ? formatCalendarHours(hours) : ""}</span>
         </button>
       `;
     })
@@ -466,15 +525,10 @@ function renderDayDetails() {
   const selectedDate = state.selectedDay ? parseIsoDate(state.selectedDay) : null;
 
   if (!selectedDate) {
-    refs.dayDetailTitle.textContent = "Choose a day";
-    refs.dayDetailHours.textContent = "0 hrs";
     refs.dayDetailList.className = "list empty";
     refs.dayDetailList.textContent = "No day selected yet.";
     return;
   }
-
-  refs.dayDetailTitle.textContent = formatLongWeekdayDate(selectedDate);
-  refs.dayDetailHours.textContent = formatHours(entries.reduce((sum, entry) => sum + entry.hours, 0));
 
   if (!entries.length) {
     refs.dayDetailList.className = "list empty";
@@ -605,18 +659,19 @@ function parseHours(row) {
     return direct;
   }
 
-  if (cleanText(row.Category).toLowerCase() === "time") {
+  const category = cleanText(row.Category).toLowerCase();
+  if (category === "time" || category === "training") {
     const value = Number.parseFloat(cleanText(row.Value));
     if (Number.isFinite(value)) {
       return value;
     }
   }
 
-  const otherOutcome = cleanText(row["Other Outcome"]).toLowerCase();
-  const match = otherOutcome.match(/(\d+(?:\.\d+)?)\s*(minute|minutes|hour|hours)/);
+  const otherOutcome = cleanText(row["Other Outcome"] || row.Value).toLowerCase();
+  const match = otherOutcome.match(/(\d+(?:\.\d+)?)\s*(m|min|mins|minute|minutes|h|hr|hrs|hour|hours)/);
   if (match) {
     const amount = Number.parseFloat(match[1]);
-    return match[2].startsWith("minute") ? amount / 60 : amount;
+    return match[2].startsWith("m") ? amount / 60 : amount;
   }
 
   return 0;
@@ -732,6 +787,55 @@ function handleCalendarDayKeydown(event) {
   state.selectedDay = dayButton.dataset.date || "";
   renderCalendar();
   renderDayDetails();
+}
+
+function moveCalendarMonth(amount) {
+  state.currentMonth = addMonths(state.currentMonth, amount);
+  syncSelectedDay();
+  renderCalendar();
+  renderDayDetails();
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  refs.calendarGrid.classList.remove("month-enter-next", "month-enter-previous");
+  void refs.calendarGrid.offsetWidth;
+  refs.calendarGrid.classList.add(amount > 0 ? "month-enter-next" : "month-enter-previous");
+}
+
+function handleCalendarTouchStart(event) {
+  if (event.touches.length !== 1) {
+    clearCalendarTouch();
+    return;
+  }
+
+  const touch = event.touches[0];
+  state.calendarTouchStart = { x: touch.clientX, y: touch.clientY };
+}
+
+function handleCalendarTouchEnd(event) {
+  const start = state.calendarTouchStart;
+  clearCalendarTouch();
+  if (!start || event.changedTouches.length !== 1) {
+    return;
+  }
+
+  const touch = event.changedTouches[0];
+  const horizontalDistance = touch.clientX - start.x;
+  const verticalDistance = touch.clientY - start.y;
+  const isHorizontalSwipe = Math.abs(horizontalDistance) >= 48 && Math.abs(horizontalDistance) > Math.abs(verticalDistance);
+
+  if (!isHorizontalSwipe) {
+    return;
+  }
+
+  event.preventDefault();
+  moveCalendarMonth(horizontalDistance < 0 ? 1 : -1);
+}
+
+function clearCalendarTouch() {
+  state.calendarTouchStart = null;
 }
 
 function filterEntriesByRange(entries, startIso, endIso) {
@@ -971,7 +1075,16 @@ function formatHours(value) {
     maximumFractionDigits: 2,
   }).format(value);
 
-  return `${formatted} hrs`;
+  return `${formatted} hours`;
+}
+
+function formatCalendarHours(value) {
+  const formatted = new Intl.NumberFormat(undefined, {
+    minimumFractionDigits: value % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+
+  return `${formatted}h`;
 }
 
 function getTimeField(row, keys) {
@@ -1045,7 +1158,7 @@ function calculateEndTime(startTime, durationHours) {
   const date = new Date(2000, 0, 1, parsed.hours, parsed.minutes);
   date.setMinutes(date.getMinutes() + Math.round(durationHours * 60));
   return date.toLocaleTimeString(undefined, {
-    hour: "numeric",
+    hour: "2-digit",
     minute: "2-digit",
   });
 }
@@ -1058,7 +1171,7 @@ function formatClockValue(value) {
 
   const date = new Date(2000, 0, 1, parsed.hours, parsed.minutes);
   return date.toLocaleTimeString(undefined, {
-    hour: "numeric",
+    hour: "2-digit",
     minute: "2-digit",
   });
 }

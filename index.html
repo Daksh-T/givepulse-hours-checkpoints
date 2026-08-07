@@ -79,7 +79,7 @@
                 </div>
 
                 <div class="result">
-                    <strong id="totalHours">0 hrs</strong>
+                    <strong id="totalHours">0 hours</strong>
                     <p id="totalMeta">
                         Choose a range to calculate your total hours.
                     </p>
@@ -137,26 +137,32 @@
                         </article>
                         <article class="mini-card">
                             <span>Avg / week</span>
-                            <strong id="averageWeek">0 hrs</strong>
+                            <strong id="averageWeek">0 hours</strong>
                         </article>
                     </div>
 
                     <div class="breakdowns">
-                        <section class="block">
-                            <h3>By site</h3>
+                        <details class="block breakdown">
+                            <summary>
+                                <span>By site</span>
+                                <span class="disclosure-arrow" aria-hidden="true">▸</span>
+                            </summary>
                             <div id="siteBreakdown" class="list empty">
                                 No data yet.
                             </div>
-                        </section>
-                        <section class="block">
-                            <h3>By month</h3>
+                        </details>
+                        <details class="block breakdown">
+                            <summary>
+                                <span>By month</span>
+                                <span class="disclosure-arrow" aria-hidden="true">▸</span>
+                            </summary>
                             <div id="monthBreakdown" class="list empty">
                                 No data yet.
                             </div>
-                        </section>
+                        </details>
                     </div>
 
-                    <section class="calendar">
+                    <section class="calendar" aria-label="Hours calendar">
                         <div class="calendar-head">
                             <h3 id="calendarTitle">Month</h3>
                             <div class="calendar-nav">
@@ -193,14 +199,6 @@
                     </section>
 
                     <section class="block day-details">
-                        <div class="day-details-head">
-                            <div>
-                                <h3 id="dayDetailTitle">Choose a day</h3>
-                            </div>
-                            <strong id="dayDetailHours" class="day-details-total"
-                                >0 hrs</strong
-                            >
-                        </div>
                         <div id="dayDetailList" class="list empty">
                             No day selected yet.
                         </div>
@@ -247,7 +245,7 @@
                         <strong>Export Impacts</strong>. If you do not see it,
                         scroll down.
                     </p>
-                    <p>Click <strong>Export all</strong> in that popup.</p>
+                    <p>Then click <strong>Export all</strong> in the dropdown.</p>
                     <p>Finally, upload that saved file to this website.</p>
                 </div>
             </div>
