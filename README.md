@@ -58,7 +58,8 @@ The app includes an in-app help button with these instructions:
 2. Click `Export Impacts`
 3. If you do not see it, scroll down
 4. Click **Export all** in the dropdown
-5. Upload the saved CSV to this app
+5. If GivePulse says it will email your export, check your Sewanee email and click **Download** in that message
+6. Upload the downloaded CSV to this app
 
 The app accepts both GivePulse export layouts: the older `Date`, `Category`, `Value`, and `Organization` layout, and the newer layout with `Start Date`, `Start Time`, `End Date`, and `End Time` columns.
 
