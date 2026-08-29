@@ -42,7 +42,7 @@ It uses these targets:
 - Fall 2026: September 25, October 30, November 20, and December 10
 - Spring 2027: February 12, March 19, April 16, and April 28
 
-Targets remain `23.4`, `58.5`, `87.75`, and `117` hours for senior Bonners/Canales, and `26.6`, `69`, `103.5`, and `133` hours for everyone else.
+Targets are 30, 60, 90, and 118 hours for senior Bonners/Canales, and 35, 70, 105, and 140 hours for everyone else.
 
 Zones:
 
@@ -59,6 +59,8 @@ The app includes an in-app help button with these instructions:
 3. If you do not see it, scroll down
 4. Click **Export all** in the dropdown
 5. Upload the saved CSV to this app
+
+The app accepts both GivePulse export layouts: the older `Date`, `Category`, `Value`, and `Organization` layout, and the newer layout with `Start Date`, `Start Time`, `End Date`, and `End Time` columns.
 
 ## Files
 

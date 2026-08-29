@@ -1,10 +1,10 @@
 const SENIOR_PREFERENCE_KEY = "givepulse_senior_bonner_canale";
 const CSV_HELP_SEEN_KEY = "givepulse_csv_help_seen";
 const CHECKPOINT_TARGETS = [
-  { seniorTarget: 23.4, otherTarget: 26.6 },
-  { seniorTarget: 58.5, otherTarget: 69 },
-  { seniorTarget: 87.75, otherTarget: 103.5 },
-  { seniorTarget: 117, otherTarget: 133 },
+  { seniorTarget: 30, otherTarget: 35 },
+  { seniorTarget: 60, otherTarget: 70 },
+  { seniorTarget: 90, otherTarget: 105 },
+  { seniorTarget: 118, otherTarget: 140 },
 ];
 
 const CHECKPOINTS_BY_SEMESTER = {
@@ -985,11 +985,35 @@ function parseSlashDate(value) {
     return null;
   }
 
-  return new Date(year, month - 1, day);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+    ? date
+    : null;
+}
+
+function parseIsoDateValue(value) {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) {
+    return null;
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day
+    ? date
+    : null;
 }
 
 function parseEntryDate(row) {
-  const slashDate = parseSlashDate(cleanText(row["Start Date"]));
+  const startDate = cleanText(row["Start Date"]);
+  const isoDate = parseIsoDateValue(startDate);
+  if (isoDate) {
+    return isoDate;
+  }
+
+  const slashDate = parseSlashDate(startDate);
   if (slashDate) {
     return slashDate;
   }
