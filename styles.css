@@ -306,7 +306,27 @@ h3 {
 
 .checkpoint-card {
   margin-top: 16px;
-  padding: 18px;
+  padding: 24px;
+}
+
+.checkpoint-head h2 { margin: 0; font-size: 1.25rem; }
+.checkpoint-caption { margin: 6px 0 0; color: var(--muted); font-size: 0.875rem; line-height: 1.5; }
+.checkpoint-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 16px; margin-top: 24px; }
+.checkpoint-detail { border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+.checkpoint-eyebrow { margin: 0 0 14px; color: var(--muted); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.checkpoint-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.checkpoint-row h3 { margin: 0; font-size: 1rem; line-height: 1.4; }
+.checkpoint-row .checkpoint-badge { min-width: 0; padding: 5px 10px; font-size: 0.75rem; }
+.checkpoint-target { display: flex; align-items: baseline; gap: 8px; margin: 20px 0 0; }
+.checkpoint-target strong { font-size: 2.25rem; line-height: 1.1; letter-spacing: -0.04em; }
+.checkpoint-target span { color: var(--muted); font-size: 0.875rem; }
+.checkpoint-head .toggle-card { min-height: 42px; padding: 8px 10px; gap: 8px; }
+.checkpoint-head .toggle-text { font-size: 0.8rem; }
+@media (max-width: 600px) {
+  .checkpoint-card { padding: 18px; }
+  .checkpoint-head .toggle-card { align-self: flex-start; }
+  .checkpoint-grid { margin-top: 20px; gap: 12px; }
+  .checkpoint-detail { padding: 16px; }
 }
 
 .checkpoint-card.is-hidden,

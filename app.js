@@ -446,13 +446,16 @@ function renderCheckpointStatus() {
   const status = getCheckpointStatus(hours, target);
 
   refs.checkpointCard.classList.remove("is-hidden");
-  refs.checkpointTitle.textContent = `${checkpoint.label} · ${sameDate(now, checkpoint.date) ? "due today" : `due ${formatShortMonthDay(checkpoint.date)}`}`;
+  refs.checkpointTitle.textContent = `${checkpoint.label} · ${sameDate(now, checkpoint.date) ? "due today" : formatShortMonthDay(checkpoint.date)}`;
   refs.checkpointBadge.textContent = capitalize(status.zone);
   refs.checkpointBadge.className = `checkpoint-badge ${status.zone}`;
-  refs.checkpointSummary.textContent = status.summary;
-  refs.checkpointMeta.textContent = `You have ${formatHours(hours)}. Target for this checkpoint is ${formatHours(
-    target
-  )}.`;
+  const progressText = (goal) => hours === goal
+    ? "Target met"
+    : hours > goal
+      ? `${formatHours(hours - goal)} above target`
+      : `${formatHours(goal - hours)} to reach target`;
+  refs.checkpointSummary.textContent = progressText(target);
+  refs.checkpointMeta.innerHTML = `<strong>${target}</strong><span>hours required</span>`;
 
   const previous = semesterCheckpoints[semesterCheckpoints.indexOf(checkpoint) - 1];
   refs.previousCheckpoint.classList.toggle("is-hidden", !previous);
@@ -460,7 +463,14 @@ function renderCheckpointStatus() {
   if (previous) {
     const previousTarget = state.isSeniorBonner ? previous.seniorTarget : previous.otherTarget;
     const previousStatus = getCheckpointStatus(hours, previousTarget);
-    refs.previousCheckpoint.textContent = `Previous: ${previous.label} · ${formatShortMonthDay(previous.date)} · target ${formatHours(previousTarget)} · ${capitalize(previousStatus.zone)} based on your current uploaded hours.`;
+    refs.previousCheckpoint.innerHTML = `
+      <p class="checkpoint-eyebrow">Previous checkpoint</p>
+      <div class="checkpoint-row">
+        <h3>${previous.label} · ${formatShortMonthDay(previous.date)}</h3>
+        <span class="checkpoint-badge ${previousStatus.zone}">${capitalize(previousStatus.zone)}</span>
+      </div>
+      <p class="checkpoint-target"><strong>${previousTarget}</strong><span>hours required</span></p>
+      <p class="checkpoint-caption">${progressText(previousTarget)}</p>`;
   }
 }
 

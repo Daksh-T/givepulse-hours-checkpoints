@@ -88,7 +88,8 @@
                 <section id="checkpointCard" class="checkpoint-card is-hidden">
                     <div class="checkpoint-head">
                         <div>
-                            <h2 id="checkpointTitle">Spring 2026 checkpoint</h2>
+                            <h2>Hour checkpoints</h2>
+                            <p class="checkpoint-caption">Based on your current uploaded hours</p>
                         </div>
                         <label class="toggle-card">
                             <input id="seniorToggle" type="checkbox" />
@@ -101,14 +102,18 @@
                             >
                         </label>
                     </div>
-                    <div class="checkpoint-status">
-                        <span id="checkpointBadge" class="checkpoint-badge"
-                            >Green</span
-                        >
-                        <p id="checkpointSummary">You're on track.</p>
+                    <div class="checkpoint-grid">
+                        <div class="checkpoint-detail">
+                            <p class="checkpoint-eyebrow">Current checkpoint</p>
+                            <div class="checkpoint-row">
+                                <h3 id="checkpointTitle"></h3>
+                                <span id="checkpointBadge" class="checkpoint-badge"></span>
+                            </div>
+                            <p id="checkpointMeta" class="checkpoint-target"></p>
+                            <p id="checkpointSummary" class="checkpoint-caption"></p>
+                        </div>
+                        <div id="previousCheckpoint" class="checkpoint-detail is-hidden"></div>
                     </div>
-                    <p id="checkpointMeta" class="note"></p>
-                    <p id="previousCheckpoint" class="note is-hidden"></p>
                 </section>
             </section>
 
