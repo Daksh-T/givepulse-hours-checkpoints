@@ -37,6 +37,8 @@ The semester dropdown only shows the current academic year:
 
 The checkpoint card only appears when the selected range is the actual current semester and checkpoint dates are configured for that semester.
 
+The current checkpoint stays visible throughout its due date in the device's local timezone, labeled “due today.” It advances the following day. The card also shows the previous checkpoint's date, target, and zone based on the uploaded semester hours (not a historical snapshot). Before the first checkpoint, there is no previous checkpoint; after the last one, the final checkpoint remains visible.
+
 It uses these targets:
 
 - Fall 2026: September 25, October 30, November 20, and December 10

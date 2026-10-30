@@ -309,7 +309,8 @@ h3 {
   padding: 18px;
 }
 
-.checkpoint-card.is-hidden {
+.checkpoint-card.is-hidden,
+#previousCheckpoint.is-hidden {
   display: none;
 }
 

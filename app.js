@@ -82,6 +82,7 @@ function cacheRefs() {
   refs.checkpointBadge = document.querySelector("#checkpointBadge");
   refs.checkpointSummary = document.querySelector("#checkpointSummary");
   refs.checkpointMeta = document.querySelector("#checkpointMeta");
+  refs.previousCheckpoint = document.querySelector("#previousCheckpoint");
   refs.seniorToggle = document.querySelector("#seniorToggle");
   refs.statsRange = document.querySelector("#statsRange");
   refs.impactCount = document.querySelector("#impactCount");
@@ -433,7 +434,8 @@ function renderCheckpointStatus() {
     return;
   }
 
-  const checkpoint = getCurrentCheckpoint(semesterCheckpoints, new Date());
+  const now = new Date();
+  const checkpoint = getCurrentCheckpoint(semesterCheckpoints, now);
   if (!checkpoint) {
     refs.checkpointCard.classList.add("is-hidden");
     return;
@@ -444,13 +446,22 @@ function renderCheckpointStatus() {
   const status = getCheckpointStatus(hours, target);
 
   refs.checkpointCard.classList.remove("is-hidden");
-  refs.checkpointTitle.textContent = `${checkpoint.label} · due ${formatShortMonthDay(checkpoint.date)}`;
+  refs.checkpointTitle.textContent = `${checkpoint.label} · ${sameDate(now, checkpoint.date) ? "due today" : `due ${formatShortMonthDay(checkpoint.date)}`}`;
   refs.checkpointBadge.textContent = capitalize(status.zone);
   refs.checkpointBadge.className = `checkpoint-badge ${status.zone}`;
   refs.checkpointSummary.textContent = status.summary;
   refs.checkpointMeta.textContent = `You have ${formatHours(hours)}. Target for this checkpoint is ${formatHours(
     target
   )}.`;
+
+  const previous = semesterCheckpoints[semesterCheckpoints.indexOf(checkpoint) - 1];
+  refs.previousCheckpoint.classList.toggle("is-hidden", !previous);
+  refs.previousCheckpoint.textContent = "";
+  if (previous) {
+    const previousTarget = state.isSeniorBonner ? previous.seniorTarget : previous.otherTarget;
+    const previousStatus = getCheckpointStatus(hours, previousTarget);
+    refs.previousCheckpoint.textContent = `Previous: ${previous.label} · ${formatShortMonthDay(previous.date)} · target ${formatHours(previousTarget)} · ${capitalize(previousStatus.zone)} based on your current uploaded hours.`;
+  }
 }
 
 function renderList(container, rows, noun) {
@@ -921,7 +932,8 @@ function getPresetById(semesters, presetId) {
 }
 
 function getCurrentCheckpoint(checkpoints, now) {
-  const current = checkpoints.find((checkpoint) => now <= checkpoint.date);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const current = checkpoints.find((checkpoint) => today <= checkpoint.date);
   return current || checkpoints[checkpoints.length - 1];
 }
 
